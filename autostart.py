@@ -60,7 +60,7 @@ NHL_TEAM_ID =  {
 
 def main():
     """
-        This is the main function of the application. 
+        This is the main function of the application.
         It will start all players that are playing on a given day.
     """
 
@@ -73,14 +73,14 @@ def main():
         logging.debug("Token Path: %s" % TOKEN_PATH)
         open(TOKEN_PATH, 'r')
         hasToken = True
-    except IOError, e:
+    except IOError as e:
 
         if "No such file or directory" in e.strerror:
             hasToken = False
         else:
             logging.error("IO ERROR: [%d] %s" %(e.errno, e.strerror))
             sys.exit(1)
-    except Exception, e:
+    except Exception as e:
         logging.error("ERROR: [%d] %s" %(e.errno, e.strerror))
         sys.exit(1)
 
@@ -132,7 +132,7 @@ def getPlayerData(playerKey):
     response = requests.get(url)
     nextGame = json.loads(response.content)
     player['next_game'] = nextGame['teams'][0]['nextGameSchedule']['dates'][0]['date']
-    
+
     return player
 
 def queryYahooApi(url, dataType):
@@ -144,7 +144,7 @@ def queryYahooApi(url, dataType):
     header = "Bearer " + oauth['token']
     logging.debug("URL: %s" % url)
     response = requests.get(url, headers={'Authorization' : header})
-    
+
     if response.status_code == 200:
         logging.debug("Successfully got %s data" % dataType)
         logging.debug(response.content)
@@ -177,11 +177,11 @@ def getFullAuthorization():
     authorized = 'n'
 
     while authorized.lower() != 'y':
-        authorized = raw_input('Have you authorized me? (y/n)')
+        authorized = input('Have you authorized me? (y/n)')
         if authorized.lower() != 'y':
             print ("You need to authorize me to continue...")
 
-    authCode = raw_input("What is the code? ")
+    authCode = input("What is the code? ")
 
     # Step 2: Get Access Token to send requests to Yahoo APIs
     response = getAccessToken(authCode)
@@ -199,7 +199,7 @@ def readOAuthToken():
         tokenFile = open(TOKEN_PATH, 'r')
         oauth = json.load(tokenFile)
         tokenFile.close()
-    except Exception, e:
+    except Exception as e:
         raise e
 
     logging.debug("Reading complete!")
@@ -228,7 +228,7 @@ def parseResponse (response):
 
         return oauth
 
-    except Exception, e:
+    except Exception as e:
         raise e
 
 def getAccessToken(verifier):
@@ -291,7 +291,7 @@ def setLineup(roster):
         if benchPlayer['current_position'] == "BN" and benchPlayer['next_game'] == today:
             logging.info("Looking at bench player %s" % benchPlayer['name'])
             positions = set(benchPlayer['available_positions'])
-            logging.debug(positions) 
+            logging.debug(positions)
             player = findNonPlayingPlayer(positions, roster)
 
             if player is not None:
@@ -306,7 +306,7 @@ def setLineup(roster):
                     swapStatus = swapPlayers(player, benchPlayer)
                 else:
                     logging.info("Not starting %s because he has lower points" % player['name'])
-            
+
             if swapStatus == True:
                 position = player['current_position']
                 player['current_position'] = benchPlayer['current_position']
@@ -327,7 +327,7 @@ def findNonPlayingPlayer(positions, roster):
         if player['current_position'] in positions and player['next_game'] > today:
             logging.debug("Found player %s who plays on %s" % (player['name'], player['next_game']))
             return player
-    
+
     logging.info("All players playing today")
     return None
 
@@ -346,8 +346,8 @@ def findNextEligiblePlayer(positions, roster):
 
         if player['current_position'] in positions and float(player['points']) < float(selectedPlayer['points']) and player['current_position'] != "BN":
             logging.debug("Thinking of starting %s" % player)
-            selectedPlayer = player        
-    
+            selectedPlayer = player
+
     logging.info("Found %s to be the next eligible player" % selectedPlayer['name'])
     return selectedPlayer
 
@@ -401,7 +401,7 @@ def swapPlayers(currentPlayer, benchPlayer):
 
     return True
 
-logging.basicConfig(filename='/var/log/yahoo-sports-bot/autostart.log', level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+#logging.basicConfig(filename='/var/log/yahoo-sports-bot/autostart.log', level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
